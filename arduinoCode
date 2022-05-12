@@ -1,0 +1,77 @@
+#include "DHT.h"
+#define DHTPIN 7     
+#define DHTTYPE DHT11   
+
+DHT dht(DHTPIN, DHTTYPE);
+
+
+#include"SoftwareSerial.h"
+
+bool on = false , on1 = false;
+int t_limit = 32;
+char input;
+#define relay2 12
+#define relay1 11
+
+void setup()
+{
+   Serial.begin(9600);
+    dht.begin();  
+    pinMode(relay1,OUTPUT);
+    pinMode(relay2,OUTPUT);
+    Serial.println("DHTxx test!");
+    digitalWrite(relay1 , HIGH);
+    digitalWrite(relay2 , HIGH);
+}
+
+void loop (){
+
+  float humidity = dht.readHumidity();
+  float t_C = dht.readTemperature();
+  float t_F = dht.readTemperature(true);
+  delay(2000);
+
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println(" %\t");
+  Serial.print("Temperature: ");
+  Serial.print(t_C);
+  Serial.println(" *C and");
+  Serial.print(t_F);
+  Serial.println(" *F\t");
+  
+
+ while(Serial.available()){
+    input = Serial.read();
+    if(input == 'a'){
+      if(on){
+        digitalWrite(relay1 , LOW);
+        on = false;
+        Serial.println("on1");
+      }else{
+        digitalWrite(relay1 , HIGH);
+        on = true;
+        Serial.println(input);
+        Serial.println("off1");
+      }
+    }
+    if(input == 'c'){
+      if(on1){
+        digitalWrite(relay2 ,LOW);
+        on1 = false;
+        Serial.println("on2");
+      }else{
+        digitalWrite(relay2 , HIGH);
+        on1 = true;
+        Serial.println("off2");
+        Serial.println(input);
+      }
+    }
+  }
+  if(t_C > t_limit){
+    digitalWrite(relay2 , LOW);
+  }else{
+    digitalWrite(relay2 , HIGH);
+  }
+  
+}
